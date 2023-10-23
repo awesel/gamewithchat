@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gam</title>
+    <div style="text-align: center">
+      <p id="scoreDisplay">Score: 0</p>
+      <a href="/about.html">how to play</a>
+      <br />
+      <a href="/utils.html">topics in class day 2</a>
+
+      <br />
+      <button
+        id="playAgainBtn"
+        style="display: none; margin: 20px auto; display: block"
+      >
+        reload page
+      </button>
+      <span id="count"></span>
+      <button id="incrementButton">Increment</button>
+      <button id="resetButton">set counter to 0</button>
+      <div id="message"></div>
+    </div>
+
+    <style>
+      canvas {
+        display: block;
+        margin: 50px auto;
+        background-color: black;
+        color: white;
+        font-family: Arial, sans-serif;
+
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script src="/game.js" type="text/javascript"></script>
+    <script src="/main.js" type="text/javascript"></script>
+  </body>
+</html>
