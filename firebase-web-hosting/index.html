@@ -4,40 +4,105 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>gam</title>
-    <div style="text-align: center">
-      <p id="scoreDisplay">Score: 0</p>
-      <a href="/about.html">how to play</a>
-      <br />
-      <a href="/utils.html">topics in class day 2</a>
-
-      <br />
-      <button
-        id="playAgainBtn"
-        style="display: none; margin: 20px auto; display: block"
-      >
-        reload page
-      </button>
-      <span id="count"></span>
-      <button id="incrementButton">Increment</button>
-      <button id="resetButton">set counter to 0</button>
-      <div id="message"></div>
-    </div>
-
-    <style>
-      canvas {
-        display: block;
-        margin: 50px auto;
-        background-color: black;
-        color: white;
-        font-family: Arial, sans-serif;
-
-        border: 1px solid #ccc;
-      }
-    </style>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <body class="bg-gray-100 h-screen flex items-center">
+    <div class="flex w-full h-full">
+      <!-- Canvas on the left side -->
+      <canvas
+        id="gameCanvas"
+        width="800"
+        height="600"
+        class="bg-black flex-none border border-gray-300"
+      ></canvas>
+
+      <!-- Rest of the content on the right side -->
+      <div class="flex-grow p-8">
+        <div class="text-center my-8">
+          <p id="scoreDisplay" class="text-2xl font-bold mb-4">Score: 0</p>
+
+          <!-- Convert link to button -->
+          <button
+            onclick="window.location.href='/about.html';"
+            class="bg-blue-500 text-white py-2 px-4 rounded-full mb-2 w-full"
+          >
+            How to play
+          </button>
+
+          <!-- Convert link to button -->
+
+          <button
+            onclick="window.location.href='/chatroom.html';"
+            class="bg-blue-500 text-white py-2 px-4 rounded-full mb-2 w-full"
+          >
+            Global Chat
+          </button>
+
+          <div class="my-4">
+            <span id="highFiveCount" class="mr-4 text-2xl font-bold"
+              >High Fives: 0</span
+            >
+            <button
+              id="highFiveButton"
+              class="bg-green-500 text-white py-2 px-4 rounded-full mb-2 w-full"
+            >
+              High Five!
+            </button>
+          </div>
+          <!-- ... (rest of the HTML code) -->
+
+          <div id="leaderboard" class="border border-gray-300 p-2">
+            <h2>Leaderboard</h2>
+            <ol id="scoreList" class="border border-gray-300 p-2">
+              <!-- The scores will be populated here -->
+            </ol>
+          </div>
+
+          <div id="upgradeButtonsContainer" class="flex flex-col space-y-2">
+            <button
+              data-cost="100"
+              onclick="purchaseUpgrade('Magazine Size')"
+              class="btn-upgrade bg-lightgreen hover:bg-green-500 text-black px-4 py-2 rounded border border-gray-300"
+            >
+              Magazine Size ($100)
+            </button>
+            <button
+              data-cost="150"
+              onclick="purchaseUpgrade('Damage')"
+              class="btn-upgrade bg-lightgreen hover:bg-green-500 text-black px-4 py-2 rounded border border-gray-300"
+            >
+              Damage ($150)
+            </button>
+            <button
+              data-cost="50"
+              onclick="purchaseUpgrade('Speed')"
+              class="btn-upgrade bg-lightgreen hover:bg-green-500 text-black px-4 py-2 rounded border border-gray-300"
+            >
+              Speed ($50)
+            </button>
+            <button
+              data-cost="200"
+              onclick="purchaseUpgrade('Extra Life')"
+              class="btn-upgrade bg-lightgreen hover:bg-green-500 text-black px-4 py-2 rounded border border-gray-300"
+            >
+              Extra Life ($200)
+            </button>
+          </div>
+
+          <!-- ... (rest of the HTML code) -->
+
+          <div id="message" class="my-4"></div>
+        </div>
+      </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+
+    <!-- Firestore (for Database) -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="/game.js" type="text/javascript"></script>
-    <script src="/main.js" type="text/javascript"></script>
   </body>
 </html>

@@ -1,69 +1,48 @@
-class Main {
-  constructor() {
-    // Check if localStorage has a 'counter' key, if not set it to 0
-    this.counter = localStorage.getItem("counter")
-      ? parseInt(localStorage.getItem("counter"))
-      : 0;
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "personalwebsite-andrew",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
 
-    // Increment the counter for each page view
-    this.incrementCounter();
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    // Display the initial count
-    document.getElementById("count").innerText = "views: " + this.counter;
+// DOM Elements
+const highFiveCountDisplay = document.getElementById("highFiveCount");
+const highFiveButton = document.getElementById("highFiveButton");
 
-    // Event Bindings
-    this.bindEvents();
-
-    // Load any custom settings or methods
-    this.loadCustomFeatures();
-  }
-
-  incrementCounter() {
-    this.counter++;
-    localStorage.setItem("counter", this.counter);
-    document.getElementById("count").innerText = "views: " + this.counter;
-  }
-
-  // 1. Event Bindings
-  bindEvents() {
-    // Event listener for incrementing counter
-    document.getElementById("incrementButton").addEventListener("click", () => {
-      this.incrementCounter();
-    });
-
-    // Event listener for resetting counter
-    document.getElementById("resetButton").addEventListener("click", () => {
-      this.resetCounter();
-    });
-  }
-
-  // 2. Custom Functions
-  // Function to reset counter
-  resetCounter() {
-    this.counter = 0;
-    localStorage.setItem("counter", this.counter);
-    document.getElementById("count").innerText = "views: " + this.counter;
-  }
-
-  // Function to log the current counter
-  logCounter() {
-    console.log(`Current counter value: ${this.counter}`);
-  }
-
-  // Function to display a greeting message based on the counter
-  loadCustomFeatures() {
-    const messageElement = document.getElementById("message");
-    if (this.counter <= 5) {
-      messageElement.innerText = "Thanks for visiting a few times!";
-    } else if (this.counter > 5 && this.counter <= 15) {
-      messageElement.innerText = "You seem to like this page. Keep visiting!";
+// Fetch the current high five count on page load
+db.collection("highFives")
+  .doc("count")
+  .get()
+  .then((doc) => {
+    if (doc.exists) {
+      const count = doc.data().value;
+      updateHighFiveDisplay(count);
     } else {
-      messageElement.innerText = "Wow! You are a regular visitor here!";
+      // Initialize count if it doesn't exist
+      db.collection("highFives").doc("count").set({ value: 0 });
     }
-  }
-}
+  });
 
-// Initialize the Main class
-document.addEventListener("DOMContentLoaded", () => {
-  new Main();
+// Update Firestore and local display when the "High Five" button is pressed
+highFiveButton.addEventListener("click", function () {
+  const docRef = db.collection("highFives").doc("count");
+  docRef
+    .update({
+      value: firebase.firestore.FieldValue.increment(1),
+    })
+    .then(() => {
+      docRef.get().then((doc) => {
+        updateHighFiveDisplay(doc.data().value);
+      });
+    });
 });
+
+function updateHighFiveDisplay(count) {
+  highFiveCountDisplay.textContent = "High Fives: " + count;
+}

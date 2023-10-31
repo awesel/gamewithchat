@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global Chat</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-200 h-screen flex flex-col">
+    <div class="flex-1 overflow-y-auto p-5" id="messages"></div>
+
+    <div class="p-4 bg-white border-t border-gray-300">
+      <div class="mb-4">
+        <input
+          type="text"
+          id="usernameInput"
+          class="w-full py-2 px-4 border rounded-md"
+          placeholder="Enter your username..."
+        />
+      </div>
+      <div class="flex gap-4">
+        <textarea
+          id="messageInput"
+          class="flex-1 py-2 px-4 border rounded-md"
+          rows="2"
+          placeholder="Type your message..."
+        ></textarea>
+        <button
+          id="sendButton"
+          class="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-600 transition"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+
+    <!-- Firestore (for Database) -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+
+    <script src="chatroom.js"></script>
+  </body>
+</html>

@@ -11,7 +11,18 @@ function updateScoreDisplay() {
   const scoreElement = document.getElementById("scoreDisplay");
   scoreElement.textContent = "Score: " + score;
 }
-
+document.addEventListener("keydown", (e) => {
+  if (e.key === "a") player.movingLeft = true;
+  if (e.key === "d") player.movingRight = true;
+  if (e.key === "w") player.movingUp = true; // Added this line
+  if (e.key === "s") player.movingDown = true; // Added this line
+});
+document.addEventListener("keyup", (e) => {
+  if (e.key === "a") player.movingLeft = false;
+  if (e.key === "d") player.movingRight = false;
+  if (e.key === "w") player.movingUp = false; // Added this line
+  if (e.key === "s") player.movingDown = false; // Added this line
+});
 // Generates an enemy at a random x position and with random speed.
 function generateEnemy() {
   const enemyWidth = 40;
@@ -220,10 +231,16 @@ function drawArrowToMouse() {
   ctx.stroke();
 }
 
-canvas.addEventListener("mousemove", function (e) {
-  const rect = canvas.getBoundingClientRect();
-  player.mouseX = e.clientX - rect.left;
-  player.mouseY = e.clientY - rect.top;
+const gameCanvas = document.getElementById("gameCanvas");
+
+gameCanvas.addEventListener("mousemove", function (event) {
+  const rect = gameCanvas.getBoundingClientRect();
+  const scaleX = gameCanvas.width / rect.width;
+  const scaleY = gameCanvas.height / rect.height;
+
+  // Adjust the mouse coordinates with the canvas position, scaling factor, and player's position
+  player.mouseX = (event.clientX - rect.left) * scaleX;
+  player.mouseY = (event.clientY - rect.top) * scaleY;
 });
 
 function drawBullets() {
@@ -264,7 +281,12 @@ function update() {
     bullet.x += bullet.unitX * 5; // 5 is the speed multiplier
     bullet.y += bullet.unitY * 5;
   }
-
+  if (player.movingUp && player.y > 0) {
+    player.y -= player.speed;
+  }
+  if (player.movingDown && player.y + player.height < canvas.height) {
+    player.y += player.speed;
+  }
   for (const enemy of enemies) {
     enemy.x += enemy.speed;
     if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
@@ -277,7 +299,6 @@ function update() {
   drawEnemies();
   drawBullets();
   drawArrowToMouse();
-
   drawReloadZone();
 
   handleCollisions();
@@ -309,15 +330,7 @@ function displayGameOverScreen() {
   // Display the "You Lose" text in the center of the canvas
   ctx.fillText("play again", canvas.width / 2, canvas.height / 2 - 50);
 
-  // Show the play again button
-  document.getElementById("playAgainBtn").style.display = "block"; // Show the 'Play Again' button
-}
-document.getElementById("playAgainBtn").addEventListener("click", function () {
-  resetGame(); // You'll need to implement this function in your game.js script.
-  document.getElementById("playAgainBtn").style.display = "none"; // Hide the 'Play Again' button after it's clicked
-});
-function resetGame() {
-  location.reload(); // Reloads the current page
+  saveScoreInDatabase(score);
 }
 
 function drawReloadZone() {
@@ -345,10 +358,7 @@ function drawReloadZone() {
 function playerInReloadZone() {
   return player.x < reloadZone.width;
 }
-document.addEventListener("keydown", (e) => {
-  if (e.key === "a") player.movingLeft = true;
-  if (e.key === "d") player.movingRight = true;
-});
+
 player.shoot = function () {
   this.isShooting = true;
 
@@ -375,7 +385,6 @@ player.shoot = function () {
   ctx.moveTo(this.x + this.width / 2, this.y);
   ctx.lineTo(laserEndX, laserEndY);
   ctx.stroke();
-
   for (const enemy of enemies) {
     if (
       lineRectCollide(
@@ -403,54 +412,158 @@ player.shoot = function () {
   this.currentBullets--;
 };
 
-document.addEventListener("keyup", (e) => {
-  if (e.key === "a") player.movingLeft = false;
-  if (e.key === "d") player.movingRight = false;
-});
-
 update();
 
 // game.js
-let isIndexContent = true; // By default, we're on the index.html content
 
-document
-  .getElementById("switchContentBtn")
-  .addEventListener("click", function () {
-    if (isIndexContent) {
-      fetch("about.html")
-        .then((response) => response.text())
-        .then((data) => {
-          document.body.innerHTML = data;
-          document.body.insertAdjacentHTML(
-            "beforeend",
-            '<button id="switchContentBtn">Switch Content</button>'
-          );
-          addSwitchEventListener(); // Re-add the event listener
-          isIndexContent = false;
-        });
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "personalwebsite-andrew",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function saveScoreInDatabase(score) {
+  const username = prompt("Enter your username:");
+
+  // Check if the user entered a username
+  if (username) {
+    // Save the score in Firestore
+    db.collection("scores")
+      .add({
+        username: username,
+        score: score,
+      })
+      .then(() => {
+        alert("Score saved successfully!");
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error);
+      });
+  }
+}
+
+// DOM Elements
+const highFiveCountDisplay = document.getElementById("highFiveCount");
+const highFiveButton = document.getElementById("highFiveButton");
+
+// Fetch the current high five count on page load
+db.collection("highFives")
+  .doc("count")
+  .get()
+  .then((doc) => {
+    if (doc.exists) {
+      const count = doc.data().value;
+      updateHighFiveDisplay(count);
     } else {
-      location.reload(); // Reload the page to return to the index.html content
+      // Initialize count if it doesn't exist
+      db.collection("highFives").doc("count").set({ value: 0 });
     }
   });
 
-function addSwitchEventListener() {
-  document
-    .getElementById("switchContentBtn")
-    .addEventListener("click", function () {
-      if (isIndexContent) {
-        fetch("about.html")
-          .then((response) => response.text())
-          .then((data) => {
-            document.body.innerHTML = data;
-            document.body.insertAdjacentHTML(
-              "beforeend",
-              '<button id="switchContentBtn">Switch Content</button>'
-            );
-            addSwitchEventListener(); // Re-add the event listener
-            isIndexContent = false;
-          });
-      } else {
-        location.reload(); // Reload the page to return to the index.html content
-      }
+// Update Firestore and local display when the "High Five" button is pressed
+highFiveButton.addEventListener("click", function () {
+  const docRef = db.collection("highFives").doc("count");
+  docRef
+    .update({
+      value: firebase.firestore.FieldValue.increment(1),
+    })
+    .then(() => {
+      docRef.get().then((doc) => {
+        updateHighFiveDisplay(doc.data().value);
+      });
+    });
+});
+
+function updateHighFiveDisplay(count) {
+  highFiveCountDisplay.textContent = "High Fives: " + count;
+}
+
+// Fetch the top five scores from Firestore and update the leaderboard
+function updateLeaderboard() {
+  const scoreList = document.getElementById("scoreList");
+  db.collection("scores")
+    .orderBy("score", "desc")
+    .limit(5)
+    .get()
+    .then((querySnapshot) => {
+      // Clear previous scores
+      scoreList.innerHTML = "";
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const listItem = document.createElement("li");
+        listItem.textContent = `${data.username}: ${data.score}`;
+        scoreList.appendChild(listItem);
+        consolve.log(listItem);
+      });
     });
 }
+
+// Initially populate the leaderboard
+updateLeaderboard();
+
+// Update the leaderboard every time a score is saved
+function saveScoreInDatabase(score) {
+  const username = prompt("Enter your username:");
+
+  // Check if the user entered a username
+  if (username) {
+    // Save the score in Firestore
+    db.collection("scores")
+      .add({
+        username: username,
+        score: score,
+      })
+      .then(() => {
+        alert("Score saved successfully!");
+        updateLeaderboard(); // Update the leaderboard after saving the score
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error);
+      });
+  }
+}
+function purchaseUpgrade(upgradeName) {
+  switch (upgradeName) {
+    case "Magazine Size":
+      if (score >= 100) {
+        player.maxBullets += 5;
+        score -= 100;
+        updateScoreDisplay();
+      }
+      break;
+    case "Damage":
+      if (score >= 150) {
+        // Implement logic to increase damage
+        score -= 150;
+        updateScoreDisplay();
+      }
+      break;
+    case "Speed":
+      if (score >= 50) {
+        player.speed += 2;
+        score -= 50;
+        updateScoreDisplay();
+      }
+      break;
+    case "Extra Life":
+      if (score >= 200) {
+        maxHealth += 1;
+        score -= 200;
+        updateScoreDisplay();
+      }
+      break;
+  }
+
+  // Update button availability based on score
+  updateButtonAvailability();
+}
+
+// Initial call to set up button availability
+updateButtonAvailability();
